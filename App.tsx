@@ -8,16 +8,24 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NavigationContainer } from '@react-navigation/native';
 import RootNavigator from './src/navigation/RootNavigator';
 import { AuthProvider } from './src/contexts/AuthContext';
+import { NetworkStatusBanner } from './src/components/NetworkStatusBanner';
 import './src/i18n'; // Initialize i18n
 
-
-
-// Create a client
+// Create a client with offline-first defaults
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      gcTime: 1000 * 60 * 60 * 24, // 24 hours
-      staleTime: 1000 * 60 * 5, // 5 minutes
+      staleTime: 5 * 60 * 1000,          // 5 min fresh window
+      gcTime: 24 * 60 * 60 * 1000,       // 24 hr cache retention
+      retry: 2,
+      retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 30_000),
+      networkMode: 'offlineFirst',
+      refetchOnReconnect: true,
+    },
+    mutations: {
+      retry: 3,
+      retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 30_000),
+      networkMode: 'offlineFirst',
     },
   },
 });
@@ -25,6 +33,8 @@ const queryClient = new QueryClient({
 // Create a persister
 const asyncStoragePersister = createAsyncStoragePersister({
   storage: AsyncStorage,
+  key: 'gurukul-query-cache',
+  throttleTime: 1000,
 });
 
 function App(): React.JSX.Element {
@@ -34,6 +44,10 @@ function App(): React.JSX.Element {
     <PersistQueryClientProvider
       client={queryClient}
       persistOptions={{ persister: asyncStoragePersister }}
+      onSuccess={() => {
+        // Resume any mutations that were paused while offline
+        queryClient.resumePausedMutations();
+      }}
     >
       <SafeAreaProvider>
         <StatusBar
@@ -41,9 +55,10 @@ function App(): React.JSX.Element {
           backgroundColor="transparent"
           translucent
         />
+        <NetworkStatusBanner />
         <NavigationContainer>
           <AuthProvider>
-           <RootNavigator />
+            <RootNavigator />
           </AuthProvider>
         </NavigationContainer>
       </SafeAreaProvider>
