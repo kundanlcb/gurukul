@@ -1,37 +1,49 @@
-import { client } from './api/client';
+import { authApi } from '../api/instances';
 import { AuthResponse } from '../features/auth/types';
 import { secureStorage } from '../utils/storage';
 
-const ENDPOINTS = {
-  REQUEST_OTP: '/auth/otp/request',
-  VERIFY_OTP: '/auth/otp/verify',
-  REFRESH: '/auth/refresh',
-  LOGOUT: '/auth/logout',
-};
-
 export const authService = {
   requestOtp: async (mobile: string): Promise<{ message: string }> => {
-    const response = await client.post(ENDPOINTS.REQUEST_OTP, { mobile });
-    return response.data;
+    const response = await authApi.requestOtp({ otpRequestDto: { mobileNumber: mobile } });
+    return {
+      message: response.data.data ?? 'OTP sent successfully'
+    };
   },
 
   verifyOtp: async (mobile: string, otp: string): Promise<AuthResponse> => {
-    const response = await client.post<AuthResponse>(ENDPOINTS.VERIFY_OTP, { mobile, otp });
-    
-    // Auto-persist tokens on success
-    if (response.data.token) {
-      await secureStorage.setItem('accessToken', response.data.token);
+    const response = await authApi.verifyOtp({ otpVerifyDto: { mobileNumber: mobile, otp } });
+    const data = response.data.data;
+
+    if (!data || !data.accessToken) {
+      throw new Error(response.data.error?.message || 'Verification failed');
     }
-    if (response.data.refreshToken) {
-      await secureStorage.setItem('refreshToken', response.data.refreshToken);
+
+    // Persist tokens in EncryptedStorage
+    await secureStorage.setItem('accessToken', data.accessToken);
+    if (data.refreshToken) {
+      await secureStorage.setItem('refreshToken', data.refreshToken);
     }
-    
-    return response.data;
+
+    // Map backend response to frontend AuthResponse type
+    const user = data.user;
+    return {
+      user: {
+        id: user?.userId || '',
+        name: `${user?.firstName || ''} ${user?.lastName || ''}`.trim(),
+        mobile: user?.mobileNumber || mobile,
+        role: (user?.role as any) === 'ROLE_PARENT' ? 'parent' : 'student',
+      },
+      token: data.accessToken,
+      refreshToken: data.refreshToken || '',
+    };
   },
 
   logout: async () => {
     try {
-      await client.post(ENDPOINTS.LOGOUT);
+      const refreshToken = await secureStorage.getItem('refreshToken');
+      if (refreshToken) {
+        await authApi.logout({ refreshTokenRequestDto: { refreshToken } });
+      }
     } catch (e) {
       // Ignore logout errors (network)
     } finally {
@@ -46,10 +58,14 @@ export const authService = {
     if (!refreshToken) return null;
 
     try {
-      const response = await client.post<{ token: string }>(ENDPOINTS.REFRESH, { refreshToken });
-      if (response.data.token) {
-        await secureStorage.setItem('accessToken', response.data.token);
-        return response.data.token;
+      const response = await authApi.refreshToken({ refreshTokenRequestDto: { refreshToken } });
+      const data = response.data.data;
+      if (data?.accessToken) {
+        await secureStorage.setItem('accessToken', data.accessToken);
+        if (data.refreshToken) {
+          await secureStorage.setItem('refreshToken', data.refreshToken);
+        }
+        return data.accessToken;
       }
     } catch (e) {
       console.error('Failed to refresh token', e);

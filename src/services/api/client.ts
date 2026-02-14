@@ -1,7 +1,8 @@
 import axios from 'axios';
 import { Platform } from 'react-native';
+import { secureStorage } from '../../utils/storage';
 
-const BASE_URL = 'https://api.gurukul.com/api/mobile/v1'; // Replace with env var later
+const BASE_URL = 'https://api.gurukul.com/api'; // Replace with env var later
 
 export const client = axios.create({
   baseURL: BASE_URL,
@@ -12,14 +13,17 @@ export const client = axios.create({
   },
 });
 
-// Request Interceptor: Attach Token
+// Request Interceptor: Attach Token from EncryptedStorage
 client.interceptors.request.use(
   async (config) => {
-    // TODO: Get token from EncryptedStorage
-    // const token = await getToken();
-    // if (token) {
-    //   config.headers.Authorization = `Bearer ${token}`;
-    // }
+    try {
+      const token = await secureStorage.getItem('accessToken');
+      if (token && config.headers) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    } catch (e) {
+      console.error('[API] Error reading token', e);
+    }
     console.debug(`[API] ${config.method?.toUpperCase()} ${config.url}`);
     return config;
   },
@@ -30,10 +34,11 @@ client.interceptors.request.use(
 client.interceptors.response.use(
   (response) => response,
   async (error) => {
-    // TODO: Handle Token Refresh logic here
     if (error.response?.status === 401) {
-      console.warn('[API] Unauthenticated - redirecting to login');
-      // triggerLogout();
+      console.warn('[API] Unauthenticated - clearing tokens');
+      await secureStorage.removeItem('accessToken');
+      await secureStorage.removeItem('refreshToken');
+      // The auth store's persist middleware will detect missing tokens on next checkAuth
     }
     return Promise.reject(error);
   }

@@ -31,9 +31,7 @@ export const useAuthStore = create<AuthState>()(
       requestOtp: async (mobile: string) => {
         set({ isLoading: true, error: null });
         try {
-          // await authService.requestOtp(mobile);
-          // MOCK: Simulate success delay
-          await new Promise<void>(resolve => setTimeout(resolve, 1000));
+          await authService.requestOtp(mobile);
           set({ isLoading: false });
         } catch (e: any) {
           set({ isLoading: false, error: e.message || 'Failed to request OTP' });
@@ -44,41 +42,7 @@ export const useAuthStore = create<AuthState>()(
       verifyOtp: async (mobile: string, otp: string) => {
         set({ isLoading: true, error: null });
         try {
-          // const response = await authService.verifyOtp(mobile, otp);
-          
-          // MOCK: Bypass validation
-          await new Promise<void>(resolve => setTimeout(resolve, 1000));
-          
-          const mockUser: ParentUser = {
-            id: 'mock-parent-1',
-            name: 'Demo Parent',
-            mobile: mobile,
-            role: 'parent',
-            children: [
-              {
-                id: 'student-1',
-                name: 'Rahul Kumar',
-                schoolId: 'school-1',
-                classId: '10',
-                sectionId: 'A',
-                rollNumber: '21',
-              },
-               {
-                id: 'student-2',
-                name: 'Priya Singh',
-                schoolId: 'school-1',
-                classId: '08',
-                sectionId: 'B',
-                rollNumber: '15',
-              }
-            ]
-          };
-
-          // Store tokens (mock)
-          await secureStorage.setItem('accessToken', 'mock-access-token');
-          await secureStorage.setItem('refreshToken', 'mock-refresh-token');
-
-          const response = { user: mockUser };
+          const response = await authService.verifyOtp(mobile, otp);
 
           let selectedChild = null;
           // If parent, select first child by default
@@ -106,11 +70,11 @@ export const useAuthStore = create<AuthState>()(
         try {
           await authService.logout();
         } finally {
-          set({ 
-            user: null, 
-            isAuthenticated: false, 
-            selectedChild: null, 
-            isLoading: false 
+          set({
+            user: null,
+            isAuthenticated: false,
+            selectedChild: null,
+            isLoading: false
           });
         }
       },
@@ -141,10 +105,10 @@ export const useAuthStore = create<AuthState>()(
     {
       name: 'auth-storage',
       storage: createJSONStorage(() => storage),
-      partialize: (state) => ({ 
-        user: state.user, 
+      partialize: (state) => ({
+        user: state.user,
         selectedChild: state.selectedChild,
-        isAuthenticated: state.isAuthenticated 
+        isAuthenticated: state.isAuthenticated
       }), // Persist these fields
     }
   )

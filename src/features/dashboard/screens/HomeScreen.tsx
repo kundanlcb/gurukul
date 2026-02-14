@@ -15,9 +15,16 @@ import { useNavigation } from '@react-navigation/native';
 
 type HomeNavProp = NativeStackNavigationProp<AppStackParamList>;
 
+import { BusTrackingWidget } from '../widgets/BusTrackingWidget';
+
+// ... other imports
+
 export const HomeScreen = () => {
   const navigation = useNavigation<HomeNavProp>();
   const { user } = useAuthStore();
+
+  // Mock Bus Active State (Set to true to show widget)
+  const isBusActive = true;
 
   // Mock "Today's" data - using '18' from the dataset
   const todayClasses = TIMETABLE_DATA['18']?.slice(0, 3) || [];
@@ -40,6 +47,7 @@ export const HomeScreen = () => {
       <View style={styles.content}>
         {/* Header */}
         <View style={styles.greetingHeader}>
+          {/* ... (Header content remains same) */}
           <View>
             <AppText size="s" color={theme.colors.text.secondary} style={{ marginBottom: 4 }}>
               Good Morning!
@@ -60,8 +68,12 @@ export const HomeScreen = () => {
           </View>
         </View>
 
-        {/* Notice Banner */}
-        <PromoBanner />
+        {/* Bus Tracking / Notice Banner */}
+        {isBusActive ? (
+          <BusTrackingWidget />
+        ) : (
+          <PromoBanner />
+        )}
 
 
 
