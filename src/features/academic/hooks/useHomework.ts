@@ -18,7 +18,9 @@ export const useHomework = () => {
         staleTime: 5 * 60 * 1000,
     });
 
+    // --- Mutation: Submit homework (optimistic) ---
     const submitMutation = useMutation({
+        mutationKey: ['homework', 'submit'],
         mutationFn: async (payload: {
             homeworkId: string;
             fileUrl: string;
@@ -33,7 +35,27 @@ export const useHomework = () => {
             } as any);
             return response.data;
         },
-        onSuccess: () => {
+        onMutate: async (payload) => {
+            // Optimistic: mark the homework item as "submitted" in cache
+            await queryClient.cancelQueries({ queryKey: ['homework'] });
+            const previous = queryClient.getQueryData(['homework']);
+            queryClient.setQueryData(['homework'], (old: any) => {
+                if (!old) return old;
+                if (Array.isArray(old)) {
+                    return old.map((hw: any) =>
+                        String(hw.id) === payload.homeworkId
+                            ? { ...hw, submitted: true, submittedAt: new Date().toISOString() }
+                            : hw,
+                    );
+                }
+                return old;
+            });
+            return { previous };
+        },
+        onError: (_err, _data, context) => {
+            queryClient.setQueryData(['homework'], context?.previous);
+        },
+        onSettled: () => {
             queryClient.invalidateQueries({ queryKey: ['homework'] });
         },
     });

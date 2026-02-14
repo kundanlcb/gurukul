@@ -9,7 +9,13 @@ import { NavigationContainer } from '@react-navigation/native';
 import RootNavigator from './src/navigation/RootNavigator';
 import { AuthProvider } from './src/contexts/AuthContext';
 import { NetworkStatusBanner } from './src/components/NetworkStatusBanner';
+import { useMutationToast } from './src/hooks/useMutationToast';
 import './src/i18n'; // Initialize i18n
+
+function MutationToastProvider({ children }: { children: React.ReactNode }) {
+  useMutationToast();
+  return <>{children}</>;
+}
 
 // Create a client with offline-first defaults
 const queryClient = new QueryClient({
