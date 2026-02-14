@@ -74,7 +74,7 @@ export const NotificationScreen = () => {
         return (
             <TouchableOpacity
                 style={[styles.notificationItem, !item.isRead && styles.unreadItem]}
-                onPress={() => navigation.navigate('NotificationDetail', { notification: item })}
+                onPress={() => (navigation as any).navigate('NotificationDetail', { notification: item })}
             >
                 <View style={[styles.iconBox, { backgroundColor: iconBg }]}>
                     <Icon name={iconName} size={20} color={iconColor} />

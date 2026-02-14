@@ -115,7 +115,7 @@ export const AssignmentDetailScreen = () => {
                 {!isSubmitted && (
                     <View style={styles.uploadSection}>
                         <TouchableOpacity style={styles.uploadBox} onPress={handleUpload}>
-                            <View style={[styles.uploadIconCircle, { backgroundColor: uploadedFile ? theme.colors.status.success + '20' : theme.colors.background }]}>
+                            <View style={[styles.uploadIconCircle, { backgroundColor: uploadedFile ? theme.colors.status.success + '20' : theme.colors.surface.app }]}>
                                 <Icon
                                     name={uploadedFile ? "check" : "upload-cloud"}
                                     size={24}

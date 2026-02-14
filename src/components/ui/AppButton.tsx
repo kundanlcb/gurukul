@@ -19,6 +19,8 @@ interface AppButtonProps extends PressableProps {
   isLoading?: boolean;
   style?: StyleProp<ViewStyle>;
   textStyle?: StyleProp<TextStyle>;
+  size?: 's' | 'm' | 'l'; // Added to satisfy TS
+  icon?: string; // Added to satisfy TS
 }
 
 export const AppButton: React.FC<AppButtonProps> = ({

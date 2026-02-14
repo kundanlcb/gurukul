@@ -23,6 +23,7 @@ export interface User {
   id: string;
   name: string;
   mobile: string;
+  email?: string;
   role: 'parent' | 'student';
   avatar?: string;
 }
