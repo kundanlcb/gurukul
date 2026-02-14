@@ -1,0 +1,24 @@
+{
+  "common": {
+    "loading": "लोड हो रहा है...",
+    "error": "कुछ गलत हो गया",
+    "retry": "पुनः प्रयास करें",
+    "save": "सहेजें",
+    "cancel": "रद्द करें",
+    "submit": "जमा करें"
+  },
+  "auth": {
+    "loginTitle": "गुरुकुल में लॉग इन करें",
+    "mobileNumber": "मोबाइल नंबर",
+    "sendOtp": "ओटीपी भेजें",
+    "verifyOtp": "ओटीपी सत्यापित करें",
+    "resendOtp": "ओटीपी पुनः भेजें",
+    "otpPlaceholder": "6-अंकीय ओटीपी दर्ज करें"
+  },
+  "dashboard": {
+    "greeting": "नमस्ते, {{name}}",
+    "attendance": "उपस्थिति",
+    "homework": "गृहकार्य",
+    "fees": "शुल्क"
+  }
+}

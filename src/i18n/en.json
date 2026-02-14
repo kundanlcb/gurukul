@@ -1,0 +1,24 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "retry": "Retry",
+    "save": "Save",
+    "cancel": "Cancel",
+    "submit": "Submit"
+  },
+  "auth": {
+    "loginTitle": "Login to Gurukul",
+    "mobileNumber": "Mobile Number",
+    "sendOtp": "Send OTP",
+    "verifyOtp": "Verify OTP",
+    "resendOtp": "Resend OTP",
+    "otpPlaceholder": "Enter 6-digit OTP"
+  },
+  "dashboard": {
+    "greeting": "Hello, {{name}}",
+    "attendance": "Attendance",
+    "homework": "Homework",
+    "fees": "Fees"
+  }
+}
